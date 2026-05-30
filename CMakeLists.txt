@@ -44,8 +44,14 @@ set(WARNING_FLAGS
 )
 
 if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+  include(dependencies.cmake)
+  enable_testing()
+
   add_executable(LRUTests src/lru_tests.cpp)
-  target_link_libraries(LRUTests LRUCache)
+  target_link_libraries(LRUTests LRUCache GTest::gtest_main)
+
+  include(GoogleTest)
+  gtest_discover_tests(LRUTests)
 
   add_executable(LRUExample src/lru_example.cpp)
   target_link_libraries(LRUExample LRUCache)
