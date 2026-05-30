@@ -291,6 +291,18 @@ class LRUCache {
   }
 
   /**
+   *  @brief Returns the capacity of the LRUCache.
+   *
+   *  @return Max number of elements the LRUCache can store.
+   */
+  [[nodiscard(
+      "Ignoring capacity defeats the purpose of checking the container "
+      "capacity")]]
+  std::size_t capacity() const noexcept {
+    return m_max_capacity;
+  }
+
+  /**
    *  @brief Checks whether a key exists in the cache.
    *
    *  Does not modify recency order.
