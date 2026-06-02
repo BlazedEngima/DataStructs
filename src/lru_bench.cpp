@@ -11,10 +11,20 @@ constexpr int kValue = 42;
 
 static void BM_Insert(benchmark::State& state) {
   const auto capacity = static_cast<std::size_t>(state.range(0));
+  LRUCache<int, int> cache(capacity);
 
   for (auto _ : state) {
-    LRUCache<int, int> cache(capacity);
+    cache.insert(static_cast<int>(6), kValue);
 
+    benchmark::ClobberMemory();
+  }
+}
+
+static void BM_InsertToFull(benchmark::State& state) {
+  const auto capacity = static_cast<std::size_t>(state.range(0));
+  LRUCache<int, int> cache(capacity);
+
+  for (auto _ : state) {
     for (std::size_t i = 0; i < capacity; ++i) {
       cache.insert(static_cast<int>(i), kValue);
     }
@@ -23,7 +33,7 @@ static void BM_Insert(benchmark::State& state) {
   }
 }
 
-static void BM_HitLookupHot(benchmark::State& state) {
+static void BM_L1LookupHot(benchmark::State& state) {
   const auto capacity = static_cast<std::size_t>(state.range(0));
 
   LRUCache<int, int> cache(capacity);
@@ -32,10 +42,49 @@ static void BM_HitLookupHot(benchmark::State& state) {
     cache.insert(static_cast<int>(i), kValue);
   }
 
-  constexpr int key = 0;
+  std::mt19937 rng(325123);
+  std::uniform_int_distribution<int> dist(0, static_cast<int>(300));
 
   for (auto _ : state) {
-    auto& value = cache.get(key);
+    auto& value = cache.get(dist(rng));
+    benchmark::DoNotOptimize(value);
+    benchmark::ClobberMemory();
+  }
+}
+
+static void BM_L2LookupHot(benchmark::State& state) {
+  const auto capacity = static_cast<std::size_t>(state.range(0));
+
+  LRUCache<int, int> cache(capacity);
+
+  for (std::size_t i = 0; i < capacity; ++i) {
+    cache.insert(static_cast<int>(i), kValue);
+  }
+
+  std::mt19937 rng(325123);
+  std::uniform_int_distribution<int> dist(0, static_cast<int>(5200));
+
+  for (auto _ : state) {
+    auto& value = cache.get(dist(rng));
+    benchmark::DoNotOptimize(value);
+    benchmark::ClobberMemory();
+  }
+}
+
+static void BM_L3LookupHot(benchmark::State& state) {
+  const auto capacity = static_cast<std::size_t>(state.range(0));
+
+  LRUCache<int, int> cache(capacity);
+
+  for (std::size_t i = 0; i < capacity; ++i) {
+    cache.insert(static_cast<int>(i), kValue);
+  }
+
+  std::mt19937 rng(325123);
+  std::uniform_int_distribution<int> dist(0, static_cast<int>(40'000));
+
+  for (auto _ : state) {
+    auto& value = cache.get(dist(rng));
     benchmark::DoNotOptimize(value);
     benchmark::ClobberMemory();
   }
@@ -118,7 +167,13 @@ static void BM_UpdateExisting(benchmark::State& state) {
 
 BENCHMARK(BM_Insert)->Arg(1'000)->Arg(10'000)->Arg(100'000);
 
-BENCHMARK(BM_HitLookupHot)->Arg(1'000)->Arg(10'000)->Arg(100'000);
+BENCHMARK(BM_InsertToFull)->Arg(1'000)->Arg(10'000)->Arg(100'000);
+
+BENCHMARK(BM_L1LookupHot)->Arg(1'000)->Arg(10'000)->Arg(100'000);
+
+BENCHMARK(BM_L2LookupHot)->Arg(10'000)->Arg(100'000);
+
+BENCHMARK(BM_L3LookupHot)->Arg(100'000);
 
 BENCHMARK(BM_HitLookupRandom)->Arg(1'000)->Arg(10'000)->Arg(100'000);
 
