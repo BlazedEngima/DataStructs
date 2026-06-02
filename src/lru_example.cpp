@@ -11,6 +11,11 @@ int main(int argc, char* argv[]) {
     lru.insert(i, i);
   }
 
+  for (const auto& ele : lru) {
+    std::println("Key: {}, Val: {}", ele.first, ele.second);
+  }
+
+  // or alternatively, use the provided priont formats
   std::println("{}", lru);
 
   lru.insert(5, 5);
