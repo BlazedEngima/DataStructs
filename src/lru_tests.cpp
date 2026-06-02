@@ -50,6 +50,11 @@ TEST(LRUCache_Basic, InsertAndFind) {
   auto it2 = cache.find(2);
   ASSERT_NE(it2, cache.end());
   EXPECT_EQ(it2->second, 20);
+
+  cache[3] = 6;
+  EXPECT_TRUE(cache.contains(3));
+  ASSERT_NE(cache.find(3), cache.end());
+  EXPECT_EQ(cache.find(3)->second, 6);
 }
 
 // ----------------------------
@@ -79,6 +84,9 @@ TEST(LRUCache_InsertOrUpdate, Overwrite) {
   cache.insert_or_update(1, 99);
 
   EXPECT_EQ(cache.find(1)->second, 99);
+
+  cache[1] = 350;
+  EXPECT_EQ(cache.find(1)->second, 350);
 }
 
 // ----------------------------
